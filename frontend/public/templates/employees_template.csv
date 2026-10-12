@@ -1,0 +1,4 @@
+man_no,man_id,password,name,man_roll,man_team,email,phone
+EMP001,user1,<TEMP_PASSWORD>,김철수,USER,IT팀,user1@example.com,010-0000-0001
+EMP002,user2,<TEMP_PASSWORD>,이영희,USER,구매팀,user2@example.com,010-0000-0002
+,hong,<TEMP_PASSWORD>,홍길동,ADMIN,경영팀,user3@example.com,010-0000-0003

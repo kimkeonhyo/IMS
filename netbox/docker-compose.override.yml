@@ -1,0 +1,62 @@
+# NetBox — 인프라 대장 (IMS 동거 스택, /netbox/ 경로 서빙)
+# 메인 docker-compose.yml과 분리 — compose가 자동 병합함
+services:
+  # IMS 백엔드에 NetBox 연동 env 추가 (main compose와 병합됨)
+  backend:
+    environment:
+      NETBOX_URL: "http://netbox:8080/netbox"
+      NETBOX_TOKEN: "${NETBOX_TOKEN}"
+
+  netbox-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  netbox:
+    image: ims-netbox:latest
+    depends_on:
+      - netbox-redis
+    environment: &netbox-env
+      DB_HOST: "${DB_HOST}"
+      DB_PORT: "${DB_PORT}"
+      DB_NAME: "netbox"
+      DB_USER: "${DB_USER}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      REDIS_HOST: "netbox-redis"
+      REDIS_CACHE_HOST: "netbox-redis"
+      SECRET_KEY: "${NETBOX_SECRET_KEY}"
+      API_TOKEN_PEPPER: "${NETBOX_API_TOKEN_PEPPER}"
+      # Azure AD SSO (IMS 앱 재사용)
+      AZURE_AD_CLIENT_ID: "${AZURE_AD_CLIENT_ID}"
+      AZURE_AD_CLIENT_SECRET: "${AZURE_AD_CLIENT_SECRET}"
+      AZURE_AD_TENANT_ID: "${AZURE_AD_TENANT_ID}"
+      BASE_PATH: "netbox/"
+      ALLOWED_HOSTS: "*"
+      CSRF_TRUSTED_ORIGINS: "https://ims.example.com"
+      SKIP_SUPERUSER: "false"
+      SUPERUSER_NAME: "admin"
+      SUPERUSER_EMAIL: "admin@example.com"
+      SUPERUSER_PASSWORD: "${NETBOX_SUPERUSER_PASSWORD}"
+    volumes:
+      - netbox-media:/opt/netbox/netbox/media
+      - ./netbox-extra.py:/etc/netbox/config/extra.py:ro
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  netbox-worker:
+    image: ims-netbox:latest
+    depends_on:
+      - netbox
+    environment: *netbox-env
+    volumes:
+      - ./netbox-extra.py:/etc/netbox/config/extra.py:ro
+    command: /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py rqworker
+    healthcheck:
+      test: ["CMD-SHELL", "ps -aux | grep -v grep | grep -q rqworker || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  netbox-media:

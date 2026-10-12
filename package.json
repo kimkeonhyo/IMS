@@ -1,0 +1,8 @@
+{
+  "name": "ims",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev --",
+    "start:dev": "npm --prefix backend run start:dev"
+  }
+}

@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f6fa;
+  color: #1a1a2e;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+/* ── react-grid-layout 보강 (대시보드 자유 배치) ── */
+.react-grid-item.react-grid-placeholder {
+  background: #6366f1;
+  opacity: 0.15;
+  border-radius: 0.75rem;
+}
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 30;
+  cursor: grabbing;
+}
+.react-grid-item > .react-resizable-handle {
+  z-index: 20;
+}
+.react-grid-item > .react-resizable-handle::after {
+  border-right-color: #9ca3af;
+  border-bottom-color: #9ca3af;
+}

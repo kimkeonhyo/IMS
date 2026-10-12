@@ -1,0 +1,35 @@
+# ims ERP — HTTP-only (TLS는 앞단 로드밸런서에서 종료)
+
+:80 {
+	# /oidc/callback → NestJS Backend (Azure AD OIDC, global prefix 제외 경로)
+	handle /oidc/callback {
+		reverse_proxy backend:3000
+	}
+
+	# /api/* → NestJS Backend
+	# NOTE: Do NOT strip /api prefix — NestJS uses setGlobalPrefix('api')
+	#       Swagger UI is available at https://ims.example.com/api/docs
+	handle /api/* {
+		reverse_proxy backend:3000
+	}
+
+	# /netbox/* → NetBox (인프라 대장, BASE_PATH=netbox/)
+	# 정적 파일: 컨테이너 내부 unit은 /static/* 로만 서빙하므로 prefix 제거 후 프록시
+	handle /netbox/static/* {
+		uri strip_prefix /netbox
+		reverse_proxy netbox:8080
+	}
+	handle /netbox/media/* {
+		uri strip_prefix /netbox
+		reverse_proxy netbox:8080
+	}
+	redir /netbox /netbox/
+	handle /netbox/* {
+		reverse_proxy netbox:8080
+	}
+
+	# /* → React Frontend (SPA)
+	handle {
+		reverse_proxy frontend:80
+	}
+}
